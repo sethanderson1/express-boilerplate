@@ -10,7 +10,7 @@ const db = knex({
     max: 10,
     afterCreate: function (conn, done) {
       // in this example we use pg driver's connection API
-      conn.query('SET timezone="UTC";', function (err) {
+      conn.query('SET timezone to "UTC";', function (err) {
         if (err) {
           // first query failed, return error and don't try to make next query
           console.log('init err:', err)
@@ -20,7 +20,6 @@ const db = knex({
           done(null, conn)
         }
       });
-
     }
   }
 });

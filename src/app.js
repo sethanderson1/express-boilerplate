@@ -5,8 +5,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
 const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc')
+dayjs.extend(utc)
 const { CLIENT_ORIGIN } = require('./config');
-
+const jsonParser = express.json();
 const app = express();
 
 const morganOption = (NODE_ENV === 'production')
@@ -20,13 +22,51 @@ app.use(
     })
 );
 
+// figure out how to seed and do other things with knex
+
+// app.get('/', async (req, res) => {
+//     const knex = req.app.get('db')
+//     const datesFromSeeds = await knex
+//     .select('*')
+//     .from('dates')
+
+//     console.log('datesFromSeeds', datesFromSeeds)
+
+//     // res.send(JSON.stringify({ datesFromSeeds }));
+//     res.send(datesFromSeeds);
+// })
+
+
 app.get('/', async (req, res) => {
-    const dates = await knex
-        .select('*')
-        .from('dates')
-    console.log('dates', dates)
-    res.send(JSON.stringify({ dates }));
+    const knex = req.app.get('db')
+
+    // const dateNow = dayjs()
+    // const dateNow = dayjs().format() //result: timestamp = 
+
+    const dateNow = dayjs().utc().format()
+    // const dateNow = new Date()
+    console.log('dateNow', dateNow)
+
+    const newDate = {
+        timestamp: dateNow,
+        timestamptz: dateNow
+    }
+
+    datesReturnedFromInsert = await knex
+        .insert(newDate)
+        .into('dates')
+        .returning('*')
+        .then(rows => {
+            return rows[0]
+        });
+
+
+    console.log('datesReturnedFromInsert', datesReturnedFromInsert)
+
+    res.send(datesReturnedFromInsert);
 })
+
+
 
 app.use(function errorHandler(error, req, res, next) {
     let response
